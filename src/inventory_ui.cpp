@@ -17,6 +17,7 @@
 #include "game_inventory.h"
 #include "inventory.h"
 #include "input.h"
+#include "input_popup.h"
 #include "item.h"
 #include "item_category.h"
 #include "item_pocket.h"
@@ -37,7 +38,6 @@
 #include "sdltiles.h"
 #include "localized_comparator.h"
 #include "string_formatter.h"
-#include "string_input_popup.h"
 #include "trade_ui.h"
 #include "translations.h"
 #include "type_id.h"
@@ -2631,7 +2631,7 @@ void inventory_selector::resize_window( int width, int height )
     }
     w_inv = catacurses::newwin( height, width, origin );
     if( spopup ) {
-        spopup->window( w_inv, point( 4, getmaxy( w_inv ) - 1 ), ( getmaxx( w_inv ) / 2 ) - 4 );
+        //spopup->window( w_inv, point( 4, getmaxy( w_inv ) - 1 ), ( getmaxx( w_inv ) / 2 ) - 4 );
     }
     shared_ptr_fast<ui_adaptor> current_ui = ui.lock();
     if( current_ui ) {
@@ -2660,16 +2660,19 @@ void inventory_selector::refresh_window()
 std::pair< bool, std::string > inventory_selector::query_string( const std::string &val,
         bool end_with_toggle )
 {
-    spopup = std::make_unique<string_input_popup>();
-    spopup->max_length( 256 )
-    .text( val );
-    spopup->identifier( "item_filter" ).hist_use_uilist( false );
+    spopup = std::make_unique<string_input_popup_imgui>(10);
+    spopup->set_max_input_length( 256 );
+    spopup->set_text( val );
+    //spopup->identifier( "item_filter" ).hist_use_uilist( false );
+    spopup->set_identifier("item_filter");
+    spopup->use_uilist_history( false );
     if( end_with_toggle ) {
         for( input_event const &iev : inp_mngr.get_input_for_action( "TOGGLE_ENTRY", "INVENTORY" ) ) {
-            spopup->add_callback( iev.get_first_input(), [this]() {
-                spopup->confirm();
+            callback_input ipt = callback_input(iev.get_first_input());
+            spopup->add_callback( ipt, [this]() {
+                //spopup->confirm();
                 return true;
-            } );
+            });
         }
     };
 
@@ -2678,18 +2681,14 @@ std::pair< bool, std::string > inventory_selector::query_string( const std::stri
         current_ui->mark_resize();
     }
 
+    std::string rval;
+    bool confirmed;
     do {
         ui_manager::redraw();
-        spopup->query_string( /*loop=*/false );
-    } while( !spopup->confirmed() && !spopup->canceled() );
+        rval = spopup->query();
+        confirmed = rval == "TEXT.CONFIRM";
+    } while(!confirmed && !spopup->cancelled());
 
-    std::string rval;
-    bool confirmed = spopup->confirmed();
-    if( confirmed ) {
-        rval = spopup->text();
-    }
-
-    spopup.reset();
     return std::make_pair( confirmed, rval );
 }
 
@@ -2798,7 +2797,7 @@ void inventory_selector::draw_footer( const catacurses::window &w ) const
         mvwprintz( w_inv, point( 2, getmaxy( w_inv ) - 1 ), c_cyan, "< " );
         mvwprintz( w_inv, point( ( getmaxx( w_inv ) / 2 ) - 4, getmaxy( w_inv ) - 1 ), c_cyan, " >" );
 
-        spopup->query_string( /*loop=*/false, /*draw_only=*/true );
+        //spopup->query();
     } else {
         int filter_offset = 0;
         if( has_available_choices() || !filter.empty() ) {

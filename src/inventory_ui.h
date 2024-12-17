@@ -31,7 +31,7 @@ class Character;
 class inventory_selector_preset;
 class item;
 class item_stack;
-class string_input_popup;
+class string_input_popup_imgui;
 class tinymap;
 class ui_adaptor;
 
@@ -879,7 +879,7 @@ class inventory_selector
 
         weak_ptr_fast<ui_adaptor> ui;
 
-        std::unique_ptr<string_input_popup> spopup;
+        std::unique_ptr<string_input_popup_imgui> spopup;
 
         std::string title;
         std::string hint;
