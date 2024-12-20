@@ -2660,10 +2660,9 @@ void inventory_selector::refresh_window()
 std::pair< bool, std::string > inventory_selector::query_string( const std::string &val,
         bool end_with_toggle )
 {
-    spopup = std::make_unique<string_input_popup_imgui>(10);
+    spopup = std::make_unique<string_input_popup_imgui>(20);
     spopup->set_max_input_length( 256 );
     spopup->set_text( val );
-    //spopup->identifier( "item_filter" ).hist_use_uilist( false );
     spopup->set_identifier("item_filter");
     spopup->use_uilist_history( false );
     if( end_with_toggle ) {
