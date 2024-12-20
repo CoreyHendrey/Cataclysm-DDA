@@ -880,6 +880,7 @@ class inventory_selector
         weak_ptr_fast<ui_adaptor> ui;
 
         std::unique_ptr<string_input_popup_imgui> spopup;
+        point spopupPos;
 
         std::string title;
         std::string hint;

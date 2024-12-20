@@ -2631,7 +2631,10 @@ void inventory_selector::resize_window( int width, int height )
     }
     w_inv = catacurses::newwin( height, width, origin );
     if( spopup ) {
+
         //spopup->window( w_inv, point( 4, getmaxy( w_inv ) - 1 ), ( getmaxx( w_inv ) / 2 ) - 4 );
+        spopupPos = point(getbegx(w_inv), getmaxy(w_inv)); // startx, starty
+
     }
     shared_ptr_fast<ui_adaptor> current_ui = ui.lock();
     if( current_ui ) {
@@ -2660,7 +2663,8 @@ void inventory_selector::refresh_window()
 std::pair< bool, std::string > inventory_selector::query_string( const std::string &val,
         bool end_with_toggle )
 {
-    spopup = std::make_unique<string_input_popup_imgui>(20);
+    spopupPos = point(getbegx(w_inv), getmaxy(w_inv)); // startx, starty
+    spopup = std::make_unique<string_input_popup_imgui>(20, "", "", std::ref(spopupPos), ImGuiWindowFlags_NoBackground);
     spopup->set_max_input_length( 256 );
     spopup->set_text( val );
     spopup->set_identifier("item_filter");
